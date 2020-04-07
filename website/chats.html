@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chat Websocket</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.4.0/css/bootstrap.min.css">
+    <style>
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            display: -ms-flexbox;
+            display: -webkit-box;
+            display: flex;
+            -ms-flex-align: center;
+            -ms-flex-pack: center;
+            -webkit-box-align: center;
+            align-items: center;
+            -webkit-box-pack: center;
+            justify-content: center;
+            padding-top: 40px;
+            padding-bottom: 40px;
+            background-color: #f5f5f5;
+        }
+    </style>
+</head>
+<body class="text-center">
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card align-bottom">
+                <div class="card-header bg-primary text-white">
+                    <h4>Chat</h4>
+                </div>
+                <div class="card-body text-left" style="min-height: 500px" id="chat-body">
+                </div>
+                <div class="card-footer">
+                    <div class="input-group">
+                        <strong>
+                            <span class="text-primary" id="name"></span>
+                        </strong>.
+                    </div>
+                    <form id="chat-form">
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="chat-input" placeholder="Ketikkan sesuatu...">
+                            <div class="input-group-append">
+                                <button class="btn btn-warning" type="submit">Enter</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.4.0/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/5.4.0/bootbox.min.js"></script>
+
+<!-- our script -->
+<script>
+    // define our main script app
+    chat_app = {}
+
+    // set modal ask for name
+    ask_name()
+
+    // set form on submit
+    $('#chat-form').submit(function (event) {
+        // prevent default submit
+        event.preventDefault();
+
+        // set chat to our ws
+        set_chat();
+    });
+
+    // define helper script
+    // function to ask name
+    function ask_name() {
+        bootbox.prompt("Siapa nama anda?", function (result) {
+            if (result.length == 0) {
+                ask_name()
+            } else {
+                $("#name").html(result);
+
+                // connect to our websocket
+                chat_app.ws = new WebSocket("ws://localhost:1234/chats/websocket?name=" + result)
+
+                // set our ws if open
+                chat_app.ws.onopen = function () {
+                    message = '<strong>saya</strong>: <span class="text-success">tersambung</span>'
+                    set_body(message)
+                }
+
+                // set our ws if has message
+                chat_app.ws.onmessage = function (event) {
+                    // get event result from websocket
+                    result = JSON.parse(event.data)
+
+                    // set message html to show on our display
+                    var messsages = ''
+                    switch (result.Type) {
+                        case "memasuki chatroom":
+                            messsages = '<strong>' + result.Name + '</strong>: <span class="text-success">tersambung</span>'
+                        case "chat":
+                            if (result.Message != "") {
+                                messsages = '<strong>' + result.Name + '</strong>: ' + result.Message
+                            }
+                    }
+
+                    if (messsages != '') {
+                        set_body(messsages)
+                    }
+                }
+            }
+        })
+    }
+
+    // function to set body chat
+    function set_body(message) {
+        // set html
+        html = "<p> " + message + " </p>";
+
+        // append to html
+        $("#chat-body").append(html);
+    }
+
+    // function to send message to our websocket
+    function set_chat() {
+        // get iput
+        chat_input = $("#chat-input").val();
+
+        // send to our ws
+        chat_app.ws.send(JSON.stringify({
+            Message: chat_input
+        }));
+
+        var message = '<strong>saya</strong>: ' + chat_input
+        set_body(message)
+
+        // set input empty
+        $("#chat-input").val('');
+    }
+</script>
+
+</body>
+</html>
