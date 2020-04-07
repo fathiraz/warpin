@@ -48,6 +48,15 @@ $ ls -la api/
 Warpin.postman_collection.json   Warpin.postman_environment.json
 ```
 
+## Screenshoot
+
 open your postman, and endpoint request in `insert` using `POST` and `findall` using `GET` (default api starts in [http://localhost:1234](http://localhost:1234 "http://localhost:1234"))
 
+![postman 1](https://github.com/fathiraz/warpin/blob/master/postmant_1.png)
+![postman 2](https://github.com/fathiraz/warpin/blob/master/postman_2.png)
+
+
 websocket, point your browser to [http://localhost:1234/chats/room](http://localhost:1234/chats/room "http://localhost:1234/chats/room")
+
+
+![chat room](https://github.com/fathiraz/warpin/blob/master/chats.png)
